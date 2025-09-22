@@ -1,13 +1,13 @@
-package com.bound4;
+package com.bound4.image;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class Bound4Application {
+public class ImageModuleApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(Bound4Application.class, args);
+        SpringApplication.run(ImageModuleApplication.class, args);
     }
 
 }
