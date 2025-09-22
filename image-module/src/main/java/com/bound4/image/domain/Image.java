@@ -32,6 +32,36 @@ public class Image {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void setThumbnail(ImageData thumbnailData) {
+        this.thumbnailData = thumbnailData;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void updateStatus(ImageStatus status) {
+        this.status = status;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void updateTags(Map<String, Object> tags) {
+        this.tags = tags;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void updateMemo(String memo) {
+        this.memo = memo;
+        this.updatedAt = LocalDateTime.now();
+    }
+    
+    public void markAsDeleted() {
+        this.status = ImageStatus.DELETED;
+        this.deletedAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+    
+    public boolean isDeleted() {
+        return deletedAt != null;
+    }
+
     // Getters
     public ImageId getId() {
         return id;
