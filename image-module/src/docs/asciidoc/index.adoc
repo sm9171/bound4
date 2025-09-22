@@ -1,0 +1,148 @@
+= 이미지 업로드 API 문서
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+:sectlinks:
+
+[[overview]]
+== 개요
+
+이 문서는 헥사고날 아키텍처 기반으로 구현된 이미지 업로드 API에 대한 명세서입니다.
+
+[[http-verbs]]
+== HTTP 동사
+
+본 REST API에서 사용하는 HTTP 동사는 다음과 같습니다.
+
+|===
+| 동사 | 용도
+
+| `GET`
+| 리소스를 가져올 때 사용
+
+| `POST`
+| 새 리소스를 만들 때 사용
+
+| `PUT`
+| 기존 리소스를 수정할 때 사용
+
+| `DELETE`
+| 기존 리소스를 삭제할 때 사용
+|===
+
+[[http-status-codes]]
+== HTTP 상태 코드
+
+본 REST API에서 사용하는 HTTP 상태 코드는 다음과 같습니다.
+
+|===
+| 상태 코드 | 용도
+
+| `200 OK`
+| 요청을 성공적으로 처리함
+
+| `400 Bad Request`
+| 잘못된 요청
+
+| `404 Not Found`
+| 요청한 리소스가 없음
+
+| `409 Conflict`
+| 중복된 리소스
+
+| `500 Internal Server Error`
+| 서버 내부 오류
+|===
+
+[[images]]
+== 이미지 API
+
+[[images-upload]]
+=== 이미지 업로드
+
+==== 성공 응답
+
+operation::upload-images-success[snippets='path-parameters,request-parts,response-fields,http-request,http-response']
+
+==== 파일 없음 오류
+
+operation::upload-images-no-files[snippets='path-parameters,response-fields,http-request,http-response']
+
+==== 빈 파일 오류
+
+operation::upload-images-empty-files[snippets='path-parameters,request-parts,response-fields,http-request,http-response']
+
+[[error-handling]]
+== 오류 처리
+
+API 호출 시 발생할 수 있는 오류들은 다음과 같습니다.
+
+=== 일반적인 오류 응답 형식
+
+모든 오류 응답은 다음과 같은 형식을 따릅니다:
+
+[source,json]
+----
+{
+  "success": false,
+  "data": null,
+  "message": "오류 메시지"
+}
+----
+
+=== 오류 유형
+
+|===
+| HTTP 상태 | 오류 메시지 | 설명
+
+| `400 Bad Request`
+| "No files provided"
+| 업로드할 파일이 제공되지 않음
+
+| `400 Bad Request`
+| "No valid files provided"
+| 유효하지 않은 파일 (빈 파일 등)
+
+| `409 Conflict`
+| "Image with hash {hash} already exists"
+| 동일한 해시를 가진 이미지가 이미 존재
+
+| `500 Internal Server Error`
+| "Failed to generate thumbnail for {filename}"
+| 썸네일 생성 실패
+
+| `500 Internal Server Error`
+| "Failed to read uploaded files: {error}"
+| 파일 읽기 실패
+|===
+
+[[request-response-format]]
+== 요청/응답 형식
+
+=== Content-Type
+
+* 요청: `multipart/form-data`
+* 응답: `application/json`
+
+=== 파일 제한
+
+* 최대 파일 크기: 10MB
+* 최대 요청 크기: 10MB
+* 지원 이미지 형식: JPEG, PNG, GIF 등
+
+=== 응답 데이터 형식
+
+모든 API 응답은 다음과 같은 표준 형식을 따릅니다:
+
+[source,json]
+----
+{
+  "success": true,
+  "data": {
+    // 실제 데이터
+  },
+  "message": null // 성공 시 null, 실패 시 오류 메시지
+}
+----
