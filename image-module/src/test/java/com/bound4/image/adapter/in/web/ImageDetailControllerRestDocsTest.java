@@ -4,6 +4,7 @@ import com.bound4.image.RestDocsConfiguration;
 import com.bound4.image.adapter.in.web.exception.ImageNotFoundException;
 import com.bound4.image.application.port.in.ImageDataUseCase;
 import com.bound4.image.application.port.in.ImageDetailUseCase;
+import com.bound4.image.application.port.in.ImageUpdateUseCase;
 import com.bound4.image.domain.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ImageDetailController.class)
 @AutoConfigureRestDocs
-@Import(RestDocsConfiguration.class)
+@Import({RestDocsConfiguration.class, GlobalExceptionHandler.class})
 class ImageDetailControllerRestDocsTest {
     
     @Autowired
@@ -41,6 +42,9 @@ class ImageDetailControllerRestDocsTest {
     
     @MockitoBean
     private ImageDataUseCase imageDataUseCase;
+    
+    @MockitoBean
+    private ImageUpdateUseCase imageUpdateUseCase;
     
     @Test
     void getImageDetail_Success() throws Exception {
