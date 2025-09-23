@@ -23,11 +23,8 @@ public class ImageMapper {
         entity.setFileHash(image.getFileHash().value());
         entity.setFileSize(image.getFileSize());
         entity.setMimeType(image.getMimeType());
-        entity.setImageData(image.getImageData().getData());
-        
-        if (image.getThumbnailData() != null) {
-            entity.setThumbnailData(image.getThumbnailData().getData());
-        }
+        entity.setOriginalImageKey(image.getOriginalImageKey());
+        entity.setThumbnailKey(image.getThumbnailKey());
         
         entity.setStatus(image.getStatus());
         entity.setTags(mapToJson(image.getTags()));
@@ -46,15 +43,15 @@ public class ImageMapper {
             FileHash.of(entity.getFileHash()),
             entity.getFileSize(),
             entity.getMimeType(),
-            ImageData.of(entity.getImageData())
+            entity.getOriginalImageKey()
         );
         
         if (entity.getId() != null) {
             image.setId(ImageId.of(entity.getId()));
         }
         
-        if (entity.getThumbnailData() != null) {
-            image.setThumbnail(ImageData.of(entity.getThumbnailData()));
+        if (entity.getThumbnailKey() != null) {
+            image.setThumbnailKey(entity.getThumbnailKey());
         }
         
         image.updateStatus(entity.getStatus());

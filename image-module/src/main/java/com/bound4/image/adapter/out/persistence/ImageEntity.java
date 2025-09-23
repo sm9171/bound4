@@ -28,13 +28,11 @@ public class ImageEntity {
     @Column(name = "mime_type", length = 100)
     private String mimeType;
     
-    @Lob
-    @Column(name = "image_data")
-    private byte[] imageData;
+    @Column(name = "original_image_key", length = 500)
+    private String originalImageKey;
     
-    @Lob
-    @Column(name = "thumbnail_data")
-    private byte[] thumbnailData;
+    @Column(name = "thumbnail_key", length = 500)
+    private String thumbnailKey;
     
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20)
@@ -124,20 +122,20 @@ public class ImageEntity {
         this.mimeType = mimeType;
     }
     
-    public byte[] getImageData() {
-        return imageData;
+    public String getOriginalImageKey() {
+        return originalImageKey;
     }
     
-    public void setImageData(byte[] imageData) {
-        this.imageData = imageData;
+    public void setOriginalImageKey(String originalImageKey) {
+        this.originalImageKey = originalImageKey;
     }
     
-    public byte[] getThumbnailData() {
-        return thumbnailData;
+    public String getThumbnailKey() {
+        return thumbnailKey;
     }
     
-    public void setThumbnailData(byte[] thumbnailData) {
-        this.thumbnailData = thumbnailData;
+    public void setThumbnailKey(String thumbnailKey) {
+        this.thumbnailKey = thumbnailKey;
     }
     
     public ImageStatus getStatus() {

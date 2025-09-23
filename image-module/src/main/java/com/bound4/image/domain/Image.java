@@ -10,8 +10,8 @@ public class Image {
     private final FileHash fileHash;
     private final long fileSize;
     private final String mimeType;
-    private final ImageData imageData;
-    private ImageData thumbnailData;
+    private String originalImageKey;
+    private String thumbnailKey;
     private ImageStatus status;
     private Map<String, Object> tags;
     private String memo;
@@ -21,20 +21,20 @@ public class Image {
     private Long version;
     
     public Image(ProjectId projectId, String originalFilename, FileHash fileHash, 
-                 long fileSize, String mimeType, ImageData imageData) {
+                 long fileSize, String mimeType, String originalImageKey) {
         this.projectId = projectId;
         this.originalFilename = originalFilename;
         this.fileHash = fileHash;
         this.fileSize = fileSize;
         this.mimeType = mimeType;
-        this.imageData = imageData;
+        this.originalImageKey = originalImageKey;
         this.status = ImageStatus.READY;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void setThumbnail(ImageData thumbnailData) {
-        this.thumbnailData = thumbnailData;
+    public void setThumbnailKey(String thumbnailKey) {
+        this.thumbnailKey = thumbnailKey;
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -88,12 +88,12 @@ public class Image {
         return mimeType;
     }
     
-    public ImageData getImageData() {
-        return imageData;
+    public String getOriginalImageKey() {
+        return originalImageKey;
     }
     
-    public ImageData getThumbnailData() {
-        return thumbnailData;
+    public String getThumbnailKey() {
+        return thumbnailKey;
     }
     
     public ImageStatus getStatus() {
