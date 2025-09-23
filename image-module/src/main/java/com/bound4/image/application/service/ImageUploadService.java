@@ -4,6 +4,7 @@ import com.bound4.image.adapter.in.web.exception.DuplicateImageException;
 import com.bound4.image.adapter.in.web.exception.ThumbnailGenerationException;
 import com.bound4.image.application.port.in.ImageUploadUseCase;
 import com.bound4.image.application.port.in.UploadImageCommand;
+import com.bound4.image.application.port.out.FileStorageService;
 import com.bound4.image.application.port.out.HashService;
 import com.bound4.image.application.port.out.ImageRepository;
 import com.bound4.image.application.port.out.ThumbnailService;
@@ -24,13 +25,16 @@ public class ImageUploadService implements ImageUploadUseCase {
     private final ImageRepository imageRepository;
     private final ThumbnailService thumbnailService;
     private final HashService hashService;
+    private final FileStorageService fileStorageService;
     
     public ImageUploadService(ImageRepository imageRepository, 
                              ThumbnailService thumbnailService,
-                             HashService hashService) {
+                             HashService hashService,
+                             FileStorageService fileStorageService) {
         this.imageRepository = imageRepository;
         this.thumbnailService = thumbnailService;
         this.hashService = hashService;
+        this.fileStorageService = fileStorageService;
     }
     
     @Override
@@ -55,26 +59,40 @@ public class ImageUploadService implements ImageUploadUseCase {
             throw new DuplicateImageException("Image with hash " + fileHash.value() + " already exists");
         }
         
-        // 3. 이미지 객체 생성
-        ImageData imageData = ImageData.of(command.data());
+        // 3. S3에 원본 이미지 업로드
+        String originalImageKey = generateStorageKey(command.projectId().value(), fileHash.value(), "original");
+        fileStorageService.uploadFile(originalImageKey, command.data(), command.mimeType());
+        
+        // 4. 이미지 객체 생성
         Image image = new Image(
             command.projectId(),
             command.originalFilename(),
             fileHash,
             command.data().length,
             command.mimeType(),
-            imageData
+            originalImageKey
         );
         
-        // 4. 썸네일 생성
+        // 5. 썸네일 생성 및 S3 업로드
         try {
+            ImageData imageData = ImageData.of(command.data());
             ImageData thumbnailData = thumbnailService.generateThumbnail(imageData, command.mimeType());
-            image.setThumbnail(thumbnailData);
+            
+            String thumbnailKey = generateStorageKey(command.projectId().value(), fileHash.value(), "thumbnail");
+            fileStorageService.uploadFile(thumbnailKey, thumbnailData.getData(), command.mimeType());
+            
+            image.setThumbnailKey(thumbnailKey);
         } catch (Exception e) {
+            // 원본 파일 롤백
+            fileStorageService.deleteFile(originalImageKey);
             throw new ThumbnailGenerationException("Failed to generate thumbnail for " + command.originalFilename(), e);
         }
         
-        // 5. 저장
+        // 6. 저장
         return imageRepository.save(image);
+    }
+    
+    private String generateStorageKey(Long projectId, String fileHash, String type) {
+        return String.format("projects/%d/images/%s/%s_%s", projectId, type, fileHash, type);
     }
 }
