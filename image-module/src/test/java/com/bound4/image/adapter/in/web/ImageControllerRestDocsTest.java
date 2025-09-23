@@ -139,10 +139,11 @@ class ImageControllerRestDocsTest {
     private Image createMockImage(Long id, String filename, String mimeType, Long fileSize) {
         ProjectId projectId = ProjectId.of(123L);
         FileHash fileHash = FileHash.of("a".repeat(64));
-        ImageData imageData = ImageData.of("test content".getBytes());
+        String originalImageKey = "projects/123/images/original/" + fileHash.value() + "_original";
         
-        Image image = new Image(projectId, filename, fileHash, fileSize, mimeType, imageData);
+        Image image = new Image(projectId, filename, fileHash, fileSize, mimeType, originalImageKey);
         image.setId(ImageId.of(id));
+        image.setThumbnailKey("projects/123/images/thumbnail/" + fileHash.value() + "_thumbnail");
         
         return image;
     }

@@ -136,10 +136,11 @@ class ImageDeleteControllerRestDocsTest {
     private Image createDeletedMockImage(Long imageId) {
         ProjectId projectId = ProjectId.of(123L);
         FileHash fileHash = FileHash.of("a".repeat(64));
-        ImageData imageData = ImageData.of("test content".getBytes());
+        String originalImageKey = "projects/123/images/original/" + fileHash.value() + "_original";
 
-        Image image = new Image(projectId, "sample.jpg", fileHash, 1024000L, "image/jpeg", imageData);
+        Image image = new Image(projectId, "sample.jpg", fileHash, 1024000L, "image/jpeg", originalImageKey);
         image.setId(ImageId.of(imageId));
+        image.setThumbnailKey("projects/123/images/thumbnail/" + fileHash.value() + "_thumbnail");
         image.updateTags(new HashMap<>());
         image.updateMemo("Test memo");
         

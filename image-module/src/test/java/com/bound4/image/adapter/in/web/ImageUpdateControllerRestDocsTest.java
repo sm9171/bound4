@@ -133,9 +133,9 @@ class ImageUpdateControllerRestDocsTest {
         FileHash fileHash = FileHash.of("a".repeat(64));
         long fileSize = 1024L;
         String mimeType = "image/jpeg";
-        ImageData imageData = ImageData.of(new byte[]{1, 2, 3});
+        String originalImageKey = "projects/123/images/original/" + fileHash.value() + "_original";
 
-        Image image = new Image(projectId, filename, fileHash, fileSize, mimeType, imageData);
+        Image image = new Image(projectId, filename, fileHash, fileSize, mimeType, originalImageKey);
         image.setId(ImageId.of(imageId));
         image.setVersion(version);
         

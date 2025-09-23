@@ -18,12 +18,12 @@ class ImageTest {
         FileHash fileHash = FileHash.of("a".repeat(64));
         long fileSize = 1024L;
         String mimeType = "image/jpeg";
-        ImageData imageData = ImageData.of("test content".getBytes());
+        String originalImageKey = "projects/123/images/original/" + fileHash.value() + "_original";
         
         LocalDateTime beforeCreation = LocalDateTime.now().minusSeconds(1);
         
         // When
-        Image image = new Image(projectId, filename, fileHash, fileSize, mimeType, imageData);
+        Image image = new Image(projectId, filename, fileHash, fileSize, mimeType, originalImageKey);
         
         LocalDateTime afterCreation = LocalDateTime.now().plusSeconds(1);
         
@@ -33,11 +33,11 @@ class ImageTest {
         assertThat(image.getFileHash()).isEqualTo(fileHash);
         assertThat(image.getFileSize()).isEqualTo(fileSize);
         assertThat(image.getMimeType()).isEqualTo(mimeType);
-        assertThat(image.getImageData()).isEqualTo(imageData);
+        assertThat(image.getOriginalImageKey()).isEqualTo(originalImageKey);
         assertThat(image.getStatus()).isEqualTo(ImageStatus.READY);
         assertThat(image.getCreatedAt()).isBetween(beforeCreation, afterCreation);
         assertThat(image.getUpdatedAt()).isBetween(beforeCreation, afterCreation);
-        assertThat(image.getThumbnailData()).isNull();
+        assertThat(image.getThumbnailKey()).isNull();
         assertThat(image.getTags()).isNull();
         assertThat(image.getMemo()).isNull();
         assertThat(image.getDeletedAt()).isNull();
@@ -48,16 +48,16 @@ class ImageTest {
     void setThumbnail_Success() {
         // Given
         Image image = createTestImage();
-        ImageData thumbnailData = ImageData.of("thumbnail content".getBytes());
+        String thumbnailKey = "projects/1/images/thumbnail/abc123_thumbnail";
         LocalDateTime beforeUpdate = LocalDateTime.now().minusSeconds(1);
         
         // When
-        image.setThumbnail(thumbnailData);
+        image.setThumbnailKey(thumbnailKey);
         
         LocalDateTime afterUpdate = LocalDateTime.now().plusSeconds(1);
         
         // Then
-        assertThat(image.getThumbnailData()).isEqualTo(thumbnailData);
+        assertThat(image.getThumbnailKey()).isEqualTo(thumbnailKey);
         assertThat(image.getUpdatedAt()).isBetween(beforeUpdate, afterUpdate);
     }
     
@@ -171,8 +171,8 @@ class ImageTest {
         FileHash fileHash = FileHash.of("a".repeat(64));
         long fileSize = 1024L;
         String mimeType = "image/jpeg";
-        ImageData imageData = ImageData.of("test content".getBytes());
+        String originalImageKey = "projects/123/images/original/" + fileHash.value() + "_original";
         
-        return new Image(projectId, filename, fileHash, fileSize, mimeType, imageData);
+        return new Image(projectId, filename, fileHash, fileSize, mimeType, originalImageKey);
     }
 }
