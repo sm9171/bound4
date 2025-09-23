@@ -20,9 +20,6 @@ public record ImageData(byte[] data) {
         return data.clone();
     }
     
-    public long getSize() {
-        return data.length;
-    }
     
     @Override
     public boolean equals(Object obj) {
