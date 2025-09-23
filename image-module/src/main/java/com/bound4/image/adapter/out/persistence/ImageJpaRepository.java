@@ -7,4 +7,5 @@ import java.util.Optional;
 public interface ImageJpaRepository extends JpaRepository<ImageEntity, Long> {
     
     Optional<ImageEntity> findByFileHash(String fileHash);
+    Optional<ImageEntity> findByIdAndDeletedAtIsNull(Long id);
 }
