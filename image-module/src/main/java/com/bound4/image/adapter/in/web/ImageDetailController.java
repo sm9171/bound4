@@ -2,7 +2,6 @@ package com.bound4.image.adapter.in.web;
 
 import com.bound4.image.application.port.in.*;
 import com.bound4.image.domain.Image;
-import com.bound4.image.domain.ImageData;
 import jakarta.validation.Valid;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
@@ -19,13 +18,16 @@ public class ImageDetailController {
     private final ImageDetailUseCase imageDetailUseCase;
     private final ImageDataUseCase imageDataUseCase;
     private final ImageUpdateUseCase imageUpdateUseCase;
+    private final ImageDeleteUseCase imageDeleteUseCase;
     
     public ImageDetailController(ImageDetailUseCase imageDetailUseCase, 
                                 ImageDataUseCase imageDataUseCase,
-                                ImageUpdateUseCase imageUpdateUseCase) {
+                                ImageUpdateUseCase imageUpdateUseCase,
+                                ImageDeleteUseCase imageDeleteUseCase) {
         this.imageDetailUseCase = imageDetailUseCase;
         this.imageDataUseCase = imageDataUseCase;
         this.imageUpdateUseCase = imageUpdateUseCase;
+        this.imageDeleteUseCase = imageDeleteUseCase;
     }
     
     @GetMapping("/{id}")
@@ -84,5 +86,16 @@ public class ImageDetailController {
         
         return ResponseEntity.ok()
                 .body(ApiResponse.success(response));
+    }
+    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<ImageDeleteResponse>> deleteImage(@PathVariable Long id) {
+        ImageDeleteCommand command = new ImageDeleteCommand(id);
+        Image deletedImage = imageDeleteUseCase.deleteImage(command);
+        
+        ImageDeleteResponse response = ImageDeleteResponse.from(deletedImage);
+        
+        return ResponseEntity.ok()
+                .body(ApiResponse.success(response, "이미지가 성공적으로 삭제되었습니다."));
     }
 }
