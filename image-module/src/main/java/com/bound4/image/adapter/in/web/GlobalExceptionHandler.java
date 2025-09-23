@@ -2,7 +2,9 @@ package com.bound4.image.adapter.in.web;
 
 import com.bound4.image.adapter.in.web.exception.DuplicateImageException;
 import com.bound4.image.adapter.in.web.exception.ImageNotFoundException;
+import com.bound4.image.adapter.in.web.exception.OptimisticLockException;
 import com.bound4.image.adapter.in.web.exception.ThumbnailGenerationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -30,6 +32,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleThumbnailGenerationException(ThumbnailGenerationException e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ApiResponse.error(e.getMessage()));
+    }
+    
+    @ExceptionHandler({OptimisticLockException.class, OptimisticLockingFailureException.class})
+    public ResponseEntity<ApiResponse<Void>> handleOptimisticLockException(RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(ApiResponse.error("이미지가 다른 프로세스에 의해 수정되었습니다. 새로고침 후 다시 시도해주세요."));
     }
     
     @ExceptionHandler(IOException.class)
