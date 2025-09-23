@@ -35,6 +35,6 @@ public class ImageUpdateService implements ImageUpdateUseCase {
         
         image.updatePartially(command.getTags(), command.getMemo(), command.getStatus());
         
-        return imageRepository.updateWithOptimisticLock(image);
+        return imageRepository.save(image);
     }
 }

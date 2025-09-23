@@ -1,6 +1,9 @@
 package com.bound4.image.adapter.out.persistence;
 
+import com.bound4.image.application.port.in.ImageCursorListQuery;
+import com.bound4.image.domain.Cursor;
 import com.bound4.image.domain.ImageStatus;
+import com.bound4.image.domain.SortDirection;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -12,15 +15,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 @Repository
 public class ImageQueryRepository {
-    
+
+    public static final String UPDATED_AT = "updatedAt";
+    public static final String CREATED_AT = "createdAt";
     private final JPAQueryFactory queryFactory;
-    private final QImageEntity qImage = QImageEntity.imageEntity;
+    private static final QImageEntity qImage = QImageEntity.imageEntity;
     
     public ImageQueryRepository(JPAQueryFactory queryFactory) {
         this.queryFactory = queryFactory;
@@ -79,6 +85,123 @@ public class ImageQueryRepository {
         return new PageImpl<>(content, pageable, total);
     }
     
+    public CursorPageResult<ImageEntity> findImagesByCursor(ImageCursorListQuery query) {
+        BooleanBuilder predicate = new BooleanBuilder();
+        
+        predicate.and(qImage.projectId.eq(query.getProjectId()));
+        predicate.and(qImage.deletedAt.isNull());
+        
+        if (query.getStatus() != null) {
+            predicate.and(qImage.status.eq(query.getStatus()));
+        }
+        
+        if (query.getTags() != null && !query.getTags().isEmpty()) {
+            BooleanBuilder tagPredicate = new BooleanBuilder();
+            for (String tag : query.getTags()) {
+                tagPredicate.or(qImage.tags.contains(tag));
+            }
+            predicate.and(tagPredicate);
+        }
+        
+        // Cursor 조건 추가
+        if (query.getCursor() != null) {
+            addCursorCondition(predicate, query.getCursor(), query.getDirection(), query.getSortBy());
+        }
+        
+        JPAQuery<ImageEntity> mainQuery = queryFactory
+            .selectFrom(qImage)
+            .where(predicate);
+        
+        // 정렬 조건 추가
+        addCursorOrderBy(mainQuery, query.getDirection(), query.getSortBy());
+        
+        // size + 1 조회하여 hasNext 판단
+        List<ImageEntity> content = mainQuery
+            .limit(query.getSize() + 1L)
+            .fetch();
+            
+        boolean hasNext = content.size() > query.getSize();
+        if (hasNext) {
+            content = content.subList(0, query.getSize());
+        }
+        
+        // Previous 페이지 존재 여부 확인
+        boolean hasPrevious = query.getCursor() != null;
+        
+        return new CursorPageResult<>(content, hasNext, hasPrevious, query.getSize());
+    }
+    
+    private void addCursorCondition(BooleanBuilder predicate, Cursor cursor, SortDirection direction, String sortBy) {
+        LocalDateTime cursorTimestamp = cursor.getTimestamp();
+        Long cursorId = cursor.getId();
+        
+        if (CREATED_AT.equals(sortBy)) {
+            if (direction == SortDirection.DESC) {
+                // 다음 페이지: createdAt < cursor OR (createdAt = cursor AND id < cursorId)
+                predicate.and(
+                    qImage.createdAt.lt(cursorTimestamp)
+                    .or(qImage.createdAt.eq(cursorTimestamp).and(qImage.id.lt(cursorId)))
+                );
+            } else {
+                // 이전 페이지: createdAt > cursor OR (createdAt = cursor AND id > cursorId)
+                predicate.and(
+                    qImage.createdAt.gt(cursorTimestamp)
+                    .or(qImage.createdAt.eq(cursorTimestamp).and(qImage.id.gt(cursorId)))
+                );
+            }
+        } else if (UPDATED_AT.equals(sortBy)) {
+            if (direction == SortDirection.DESC) {
+                predicate.and(
+                    qImage.updatedAt.lt(cursorTimestamp)
+                    .or(qImage.updatedAt.eq(cursorTimestamp).and(qImage.id.lt(cursorId)))
+                );
+            } else {
+                predicate.and(
+                    qImage.updatedAt.gt(cursorTimestamp)
+                    .or(qImage.updatedAt.eq(cursorTimestamp).and(qImage.id.gt(cursorId)))
+                );
+            }
+        }
+    }
+    
+    private void addCursorOrderBy(JPAQuery<ImageEntity> query, SortDirection direction, String sortBy) {
+        boolean isAsc = direction == SortDirection.ASC;
+        
+        if (UPDATED_AT.equals(sortBy)) {
+            query.orderBy(isAsc ? qImage.updatedAt.asc() : qImage.updatedAt.desc());
+            query.orderBy(isAsc ? qImage.id.asc() : qImage.id.desc());
+        } else {
+            // 기본값은 createdAt
+            query.orderBy(isAsc ? qImage.createdAt.asc() : qImage.createdAt.desc());
+            query.orderBy(isAsc ? qImage.id.asc() : qImage.id.desc());
+        }
+    }
+    
+    public long countImagesByProjectId(Long projectId, ImageStatus status, List<String> tags) {
+        BooleanBuilder predicate = new BooleanBuilder();
+        
+        predicate.and(qImage.projectId.eq(projectId));
+        predicate.and(qImage.deletedAt.isNull());
+        
+        if (status != null) {
+            predicate.and(qImage.status.eq(status));
+        }
+        
+        if (tags != null && !tags.isEmpty()) {
+            BooleanBuilder tagPredicate = new BooleanBuilder();
+            for (String tag : tags) {
+                tagPredicate.or(qImage.tags.contains(tag));
+            }
+            predicate.and(tagPredicate);
+        }
+        
+        return queryFactory
+            .select(qImage.count())
+            .from(qImage)
+            .where(predicate)
+            .fetchOne();
+    }
+    
     private List<OrderSpecifier<?>> buildOrderSpecifiers(Sort sort) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         
@@ -89,10 +212,10 @@ public class ImageQueryRepository {
         
         for (Sort.Order order : sort) {
             switch (order.getProperty()) {
-                case "createdAt":
+                case CREATED_AT:
                     orders.add(order.isAscending() ? qImage.createdAt.asc() : qImage.createdAt.desc());
                     break;
-                case "updatedAt":
+                case UPDATED_AT:
                     orders.add(order.isAscending() ? qImage.updatedAt.asc() : qImage.updatedAt.desc());
                     break;
                 case "filename":
@@ -169,6 +292,40 @@ public class ImageQueryRepository {
         
         public java.time.LocalDateTime getCreatedAt() {
             return createdAt;
+        }
+    }
+    
+    public static class CursorPageResult<T> {
+        private final List<T> content;
+        private final boolean hasNext;
+        private final boolean hasPrevious;
+        private final int requestedSize;
+        
+        public CursorPageResult(List<T> content, boolean hasNext, boolean hasPrevious, int requestedSize) {
+            this.content = content;
+            this.hasNext = hasNext;
+            this.hasPrevious = hasPrevious;
+            this.requestedSize = requestedSize;
+        }
+        
+        public List<T> getContent() {
+            return content;
+        }
+        
+        public boolean hasNext() {
+            return hasNext;
+        }
+        
+        public boolean hasPrevious() {
+            return hasPrevious;
+        }
+        
+        public int getRequestedSize() {
+            return requestedSize;
+        }
+        
+        public int getActualSize() {
+            return content.size();
         }
     }
 }
