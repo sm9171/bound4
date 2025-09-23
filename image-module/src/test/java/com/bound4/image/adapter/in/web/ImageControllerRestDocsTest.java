@@ -1,6 +1,7 @@
 package com.bound4.image.adapter.in.web;
 
 import com.bound4.image.RestDocsConfiguration;
+import com.bound4.image.application.port.in.ImageListUseCase;
 import com.bound4.image.application.port.in.ImageUploadUseCase;
 import com.bound4.image.domain.*;
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,9 @@ class ImageControllerRestDocsTest {
 
     @MockitoBean
     private ImageUploadUseCase imageUploadUseCase;
+    
+    @MockitoBean
+    private ImageListUseCase imageListUseCase;
 
     @Test
     void uploadImages_Success() throws Exception {
