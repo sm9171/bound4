@@ -37,4 +37,11 @@ public class ImageRepositoryAdapter implements ImageRepository {
         return jpaRepository.findByIdAndDeletedAtIsNull(imageId.value())
                 .map(mapper::toDomain);
     }
+    
+    @Override
+    public Image updateWithOptimisticLock(Image image) {
+        ImageEntity entity = mapper.toEntity(image);
+        ImageEntity savedEntity = jpaRepository.save(entity);
+        return mapper.toDomain(savedEntity);
+    }
 }

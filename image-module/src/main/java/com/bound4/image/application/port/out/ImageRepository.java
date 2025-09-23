@@ -10,4 +10,5 @@ public interface ImageRepository {
     Image save(Image image);
     Optional<Image> findByHash(FileHash fileHash);
     Optional<Image> findById(ImageId imageId);
+    Image updateWithOptimisticLock(Image image);
 }
