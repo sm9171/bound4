@@ -1,8 +1,10 @@
 package com.bound4.image.adapter.in.web;
 
+import com.bound4.image.RestDocsConfiguration;
 import com.bound4.image.application.port.in.ImageUpdateUseCase;
 import com.bound4.image.application.port.in.ImageDetailUseCase;
 import com.bound4.image.application.port.in.ImageDataUseCase;
+import com.bound4.image.application.port.in.ImageDeleteUseCase;
 import com.bound4.image.domain.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -32,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ImageDetailController.class)
 @AutoConfigureRestDocs
-@Import(GlobalExceptionHandler.class)
+@Import({RestDocsConfiguration.class, GlobalExceptionHandler.class})
 class ImageUpdateControllerRestDocsTest {
 
     @Autowired
@@ -49,6 +51,9 @@ class ImageUpdateControllerRestDocsTest {
 
     @MockitoBean
     private ImageDataUseCase imageDataUseCase;
+    
+    @MockitoBean
+    private ImageDeleteUseCase imageDeleteUseCase;
 
     @Test
     void updateImage_Success() throws Exception {

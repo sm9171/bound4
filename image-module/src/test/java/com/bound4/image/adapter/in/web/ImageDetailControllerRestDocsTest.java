@@ -5,6 +5,7 @@ import com.bound4.image.adapter.in.web.exception.ImageNotFoundException;
 import com.bound4.image.application.port.in.ImageDataUseCase;
 import com.bound4.image.application.port.in.ImageDetailUseCase;
 import com.bound4.image.application.port.in.ImageUpdateUseCase;
+import com.bound4.image.application.port.in.ImageDeleteUseCase;
 import com.bound4.image.domain.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,9 @@ class ImageDetailControllerRestDocsTest {
     
     @MockitoBean
     private ImageUpdateUseCase imageUpdateUseCase;
+    
+    @MockitoBean
+    private ImageDeleteUseCase imageDeleteUseCase;
     
     @Test
     void getImageDetail_Success() throws Exception {
