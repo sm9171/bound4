@@ -1,6 +1,7 @@
 package com.bound4.image.adapter.in.web;
 
 import com.bound4.image.adapter.in.web.exception.DuplicateImageException;
+import com.bound4.image.adapter.in.web.exception.ImageAlreadyDeletedException;
 import com.bound4.image.adapter.in.web.exception.ImageNotFoundException;
 import com.bound4.image.adapter.in.web.exception.OptimisticLockException;
 import com.bound4.image.adapter.in.web.exception.ThumbnailGenerationException;
@@ -38,6 +39,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleOptimisticLockException(RuntimeException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
             .body(ApiResponse.error("이미지가 다른 프로세스에 의해 수정되었습니다. 새로고침 후 다시 시도해주세요."));
+    }
+    
+    @ExceptionHandler(ImageAlreadyDeletedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleImageAlreadyDeletedException(ImageAlreadyDeletedException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(ApiResponse.error(e.getMessage()));
     }
     
     @ExceptionHandler(IOException.class)
