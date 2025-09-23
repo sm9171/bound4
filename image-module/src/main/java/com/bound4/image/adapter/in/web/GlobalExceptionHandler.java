@@ -1,6 +1,7 @@
 package com.bound4.image.adapter.in.web;
 
 import com.bound4.image.adapter.in.web.exception.DuplicateImageException;
+import com.bound4.image.adapter.in.web.exception.ImageNotFoundException;
 import com.bound4.image.adapter.in.web.exception.ThumbnailGenerationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DuplicateImageException.class)
     public ResponseEntity<ApiResponse<Void>> handleDuplicateImageException(DuplicateImageException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(ApiResponse.error(e.getMessage()));
+    }
+    
+    @ExceptionHandler(ImageNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleImageNotFoundException(ImageNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(ApiResponse.error(e.getMessage()));
     }
     
