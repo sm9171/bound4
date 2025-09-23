@@ -3,6 +3,7 @@ package com.bound4.image.adapter.in.web;
 import com.bound4.image.application.port.in.*;
 import com.bound4.image.domain.Image;
 import com.bound4.image.domain.ImageData;
+import jakarta.validation.Valid;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -17,10 +18,14 @@ public class ImageDetailController {
     
     private final ImageDetailUseCase imageDetailUseCase;
     private final ImageDataUseCase imageDataUseCase;
+    private final ImageUpdateUseCase imageUpdateUseCase;
     
-    public ImageDetailController(ImageDetailUseCase imageDetailUseCase, ImageDataUseCase imageDataUseCase) {
+    public ImageDetailController(ImageDetailUseCase imageDetailUseCase, 
+                                ImageDataUseCase imageDataUseCase,
+                                ImageUpdateUseCase imageUpdateUseCase) {
         this.imageDetailUseCase = imageDetailUseCase;
         this.imageDataUseCase = imageDataUseCase;
+        this.imageUpdateUseCase = imageUpdateUseCase;
     }
     
     @GetMapping("/{id}")
@@ -59,5 +64,25 @@ public class ImageDetailController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, 
                        "inline; filename=\"" + response.getFilename() + "\"")
                 .body(response.getImageData().getData());
+    }
+    
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponse<ImageUpdateResponse>> updateImage(
+            @PathVariable Long id,
+            @Valid @RequestBody ImageUpdateRequest request) {
+        
+        ImageUpdateCommand command = new ImageUpdateCommand(
+            id,
+            request.getTags(),
+            request.getMemo(),
+            request.getStatus(),
+            request.getVersion()
+        );
+        
+        Image updatedImage = imageUpdateUseCase.updateImage(command);
+        ImageUpdateResponse response = ImageUpdateResponse.from(updatedImage);
+        
+        return ResponseEntity.ok()
+                .body(ApiResponse.success(response));
     }
 }
