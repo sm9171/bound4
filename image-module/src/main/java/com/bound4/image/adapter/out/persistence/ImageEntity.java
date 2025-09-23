@@ -2,11 +2,8 @@ package com.bound4.image.adapter.out.persistence;
 
 import com.bound4.image.domain.ImageStatus;
 import jakarta.persistence.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
 @Entity
 @Table(name = "images")
@@ -57,6 +54,10 @@ public class ImageEntity {
     
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+    
+    @Version
+    @Column(name = "version")
+    private Long version;
     
     @PrePersist
     public void prePersist() {
@@ -185,5 +186,13 @@ public class ImageEntity {
     
     public void setDeletedAt(LocalDateTime deletedAt) {
         this.deletedAt = deletedAt;
+    }
+    
+    public Long getVersion() {
+        return version;
+    }
+    
+    public void setVersion(Long version) {
+        this.version = version;
     }
 }

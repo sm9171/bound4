@@ -18,6 +18,7 @@ public class Image {
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
+    private Long version;
     
     public Image(ProjectId projectId, String originalFilename, FileHash fileHash, 
                  long fileSize, String mimeType, ImageData imageData) {
@@ -119,8 +120,29 @@ public class Image {
         return deletedAt;
     }
     
+    public Long getVersion() {
+        return version;
+    }
+    
     // For persistence
     public void setId(ImageId id) {
         this.id = id;
+    }
+    
+    public void setVersion(Long version) {
+        this.version = version;
+    }
+    
+    public void updatePartially(Map<String, Object> tags, String memo, ImageStatus status) {
+        if (tags != null) {
+            this.tags = tags;
+        }
+        if (memo != null) {
+            this.memo = memo;
+        }
+        if (status != null) {
+            this.status = status;
+        }
+        this.updatedAt = LocalDateTime.now();
     }
 }
