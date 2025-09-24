@@ -3,14 +3,13 @@ package com.bound4.image.application.service;
 import com.bound4.image.adapter.in.web.exception.DuplicateImageException;
 import com.bound4.image.adapter.in.web.exception.ThumbnailGenerationException;
 import com.bound4.image.application.port.in.ImageUploadUseCase;
+import com.bound4.image.application.port.in.ThumbnailProcessingUseCase;
 import com.bound4.image.application.port.in.UploadImageCommand;
 import com.bound4.image.application.port.out.FileStorageService;
 import com.bound4.image.application.port.out.HashService;
 import com.bound4.image.application.port.out.ImageRepository;
-import com.bound4.image.application.port.out.ThumbnailService;
 import com.bound4.image.domain.FileHash;
 import com.bound4.image.domain.Image;
-import com.bound4.image.domain.ImageData;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,16 +22,16 @@ import java.util.Optional;
 public class ImageUploadService implements ImageUploadUseCase {
     
     private final ImageRepository imageRepository;
-    private final ThumbnailService thumbnailService;
+    private final ThumbnailProcessingUseCase thumbnailProcessingUseCase;
     private final HashService hashService;
     private final FileStorageService fileStorageService;
     
     public ImageUploadService(ImageRepository imageRepository, 
-                             ThumbnailService thumbnailService,
+                             ThumbnailProcessingUseCase thumbnailProcessingUseCase,
                              HashService hashService,
                              FileStorageService fileStorageService) {
         this.imageRepository = imageRepository;
-        this.thumbnailService = thumbnailService;
+        this.thumbnailProcessingUseCase = thumbnailProcessingUseCase;
         this.hashService = hashService;
         this.fileStorageService = fileStorageService;
     }
@@ -73,23 +72,19 @@ public class ImageUploadService implements ImageUploadUseCase {
             originalImageKey
         );
         
-        // 5. 썸네일 생성 및 S3 업로드
+        // 5. 이미지 저장 (썸네일은 비동기로 처리)
+        Image savedImage = imageRepository.save(image);
+        
+        // 6. 비동기 썸네일 생성 요청
         try {
-            ImageData imageData = ImageData.of(command.data());
-            ImageData thumbnailData = thumbnailService.generateThumbnail(imageData, command.mimeType());
-            
-            String thumbnailKey = generateStorageKey(command.projectId().value(), fileHash.value(), "thumbnail");
-            fileStorageService.uploadFile(thumbnailKey, thumbnailData.getData(), command.mimeType());
-            
-            image.setThumbnailKey(thumbnailKey);
+            thumbnailProcessingUseCase.requestThumbnailGeneration(savedImage.getId());
         } catch (Exception e) {
-            // 원본 파일 롤백
-            fileStorageService.deleteFile(originalImageKey);
-            throw new ThumbnailGenerationException("Failed to generate thumbnail for " + command.originalFilename(), e);
+            // 썸네일 생성 요청 실패는 로깅만 하고 업로드는 성공으로 처리
+            // 나중에 수동으로 재시도 가능
+            throw new ThumbnailGenerationException("Failed to request thumbnail generation for " + command.originalFilename(), e);
         }
         
-        // 6. 저장
-        return imageRepository.save(image);
+        return savedImage;
     }
     
     private String generateStorageKey(Long projectId, String fileHash, String type) {
