@@ -1,5 +1,10 @@
 server:
   port: 8082
+  servlet:
+    context-path: /api
+  error:
+    include-stacktrace: never
+    include-message: always
 
 spring:
   application:
@@ -25,8 +30,69 @@ spring:
       hibernate:
         format_sql: true
 
+  security:
+    user:
+      name: admin
+      password: admin123
+      roles: ADMIN
+
+# JWT 설정
+app:
+  jwt:
+    secret: bound4-rbac-system-jwt-secret-key-for-token-generation-and-validation-must-be-at-least-256-bits
+    expiration: 86400000      # 24시간 (milliseconds)
+    refresh-expiration: 604800000  # 7일 (milliseconds)
+
+# CORS 설정
+cors:
+  allowed-origins:
+    - http://localhost:3000
+    - http://localhost:3001
+    - https://*.bound4.com
+  allowed-methods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - PATCH
+    - OPTIONS
+  allowed-headers:
+    - Authorization
+    - Content-Type
+    - X-Requested-With
+    - Accept
+    - Origin
+  exposed-headers:
+    - Access-Control-Allow-Origin
+    - Access-Control-Allow-Credentials
+  allow-credentials: true
+  max-age: 3600
+
+# 보안 헤더 설정
+security:
+  headers:
+    frame-options: SAMEORIGIN
+    content-type-options: nosniff
+    xss-protection: 1; mode=block
+    referrer-policy: strict-origin-when-cross-origin
+    hsts:
+      max-age: 31536000
+      include-subdomains: true
+      preload: true
+
+# RBAC 설정
+rbac:
+  default-permissions:
+    cache-enabled: true
+    cache-ttl: 3600  # 1시간 (초)
+  policy-refresh:
+    enabled: true
+    interval: 1800   # 30분 (초)
+
 logging:
   level:
     com.bound4.project: DEBUG
     org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
     org.hibernate.SQL: DEBUG
+    io.jsonwebtoken: DEBUG

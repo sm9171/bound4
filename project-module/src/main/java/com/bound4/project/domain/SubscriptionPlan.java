@@ -1,8 +1,8 @@
 package com.bound4.project.domain;
 
 public enum SubscriptionPlan {
-    BASIC("기본 플랜", 10, 100),
-    PRO("프로 플랜", 100, 10000);
+    BASIC("기본 플랜", 1, 100),
+    PRO("프로 플랜", 5, 10000);
 
     private final String description;
     private final int maxProjects;
