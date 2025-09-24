@@ -1,0 +1,286 @@
+= 이미지 업로드 API 문서
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+:sectlinks:
+
+[[overview]]
+== 개요
+
+이 문서는 헥사고날 아키텍처 기반으로 구현된 이미지 업로드 API에 대한 명세서입니다.
+
+[[http-verbs]]
+== HTTP 동사
+
+본 REST API에서 사용하는 HTTP 동사는 다음과 같습니다.
+
+|===
+| 동사 | 용도
+
+| `GET`
+| 리소스를 가져올 때 사용
+
+| `POST`
+| 새 리소스를 만들 때 사용
+
+| `PUT`
+| 기존 리소스를 수정할 때 사용
+
+| `DELETE`
+| 기존 리소스를 삭제할 때 사용
+|===
+
+[[http-status-codes]]
+== HTTP 상태 코드
+
+본 REST API에서 사용하는 HTTP 상태 코드는 다음과 같습니다.
+
+|===
+| 상태 코드 | 용도
+
+| `200 OK`
+| 요청을 성공적으로 처리함
+
+| `400 Bad Request`
+| 잘못된 요청
+
+| `404 Not Found`
+| 요청한 리소스가 없음
+
+| `409 Conflict`
+| 중복된 리소스
+
+| `500 Internal Server Error`
+| 서버 내부 오류
+|===
+
+[[images]]
+== 이미지 API
+
+[[images-upload]]
+=== 이미지 업로드
+
+==== 성공 응답
+
+operation::upload-images-success[snippets='path-parameters,request-parts,response-fields,http-request,http-response']
+
+==== 파일 없음 오류
+
+operation::upload-images-no-files[snippets='path-parameters,response-fields,http-request,http-response']
+
+==== 빈 파일 오류
+
+operation::upload-images-empty-files[snippets='path-parameters,request-parts,response-fields,http-request,http-response']
+
+[[images-list]]
+=== 이미지 목록 조회
+
+Offset 기반 페이지네이션을 사용한 이미지 목록 조회 API입니다.
+
+==== 기본 조회
+
+operation::get-images-list[snippets='path-parameters,query-parameters,response-fields,http-request,http-response']
+
+==== 기본 파라미터로 조회
+
+operation::get-images-list-default[snippets='path-parameters,response-fields,http-request,http-response']
+
+==== 빈 결과
+
+operation::get-images-list-empty[snippets='path-parameters,response-fields,http-request,http-response']
+
+[[images-detail]]
+=== 이미지 상세 조회
+
+==== 성공 응답
+
+operation::get-image-detail[snippets='path-parameters,response-fields,http-request,http-response']
+
+==== 이미지 없음
+
+operation::get-image-detail-not-found[snippets='path-parameters,response-fields,http-request,http-response']
+
+[[images-data]]
+=== 이미지 데이터 조회
+
+==== 원본 이미지 조회
+
+operation::get-original-image[snippets='path-parameters,http-request,http-response']
+
+==== 썸네일 이미지 조회
+
+operation::get-thumbnail-image[snippets='path-parameters,http-request,http-response']
+
+[[images-update]]
+=== 이미지 수정
+
+==== 부분 수정
+
+operation::image-partial-update[snippets='path-parameters,request-fields,response-body,http-request,http-response']
+
+==== 전체 수정
+
+operation::image-update[snippets='path-parameters,request-fields,response-fields,http-request,http-response']
+
+[[images-delete]]
+=== 이미지 삭제
+
+==== 성공 응답
+
+operation::delete-image[snippets='path-parameters,response-fields,http-request,http-response']
+
+==== 이미지 없음
+
+operation::delete-image-not-found[snippets='path-parameters,response-fields,http-request,http-response']
+
+==== 이미 삭제된 이미지
+
+operation::delete-image-already-deleted[snippets='path-parameters,response-fields,http-request,http-response']
+
+[[images-cursor-pagination]]
+=== 커서 기반 페이지네이션
+
+커서 기반 페이지네이션은 대용량 데이터셋에서 효율적인 페이징을 제공합니다.
+
+==== 기본 조회
+
+operation::cursor-pagination-success[snippets='path-parameters,query-parameters,response-fields,http-request,http-response']
+
+==== 커서를 사용한 다음 페이지 조회
+
+operation::cursor-pagination-with-cursor[snippets='path-parameters,query-parameters,response-fields,http-request,http-response']
+
+==== 페이징 성능 비교
+
+Offset 기반 페이징과 Cursor 기반 페이징의 성능을 비교할 수 있습니다.
+
+operation::pagination-performance-comparison[snippets='path-parameters,request-fields,response-fields,http-request,http-response']
+
+[[thumbnails]]
+== 썸네일 API
+
+비동기 썸네일 생성 및 처리 상태 관리 API입니다.
+
+[[thumbnails-generation]]
+=== 썸네일 생성 요청
+
+==== 성공 응답
+
+operation::thumbnail-generation-request-success[snippets='path-parameters,response-fields,http-request,http-response']
+
+==== 이미지 없음 오류
+
+operation::thumbnail-generation-request-not-found[snippets='path-parameters,response-fields,http-request,http-response']
+
+[[thumbnails-status]]
+=== 썸네일 처리 상태 조회
+
+==== 처리 중 상태
+
+operation::thumbnail-status-success[snippets='path-parameters,response-fields,http-request,http-response']
+
+==== 완료 상태
+
+operation::thumbnail-status-completed[snippets='path-parameters,response-fields,http-request,http-response']
+
+[[thumbnails-retry]]
+=== 썸네일 생성 재시도
+
+==== 재시도 성공
+
+operation::thumbnail-generation-retry-success[snippets='path-parameters,response-fields,http-request,http-response']
+
+==== 재시도 불가능
+
+operation::thumbnail-generation-retry-cannot-retry[snippets='path-parameters,response-fields,http-request,http-response']
+
+[[error-handling]]
+== 오류 처리
+
+API 호출 시 발생할 수 있는 오류들은 다음과 같습니다.
+
+=== 일반적인 오류 응답 형식
+
+모든 오류 응답은 다음과 같은 형식을 따릅니다:
+
+[source,json]
+----
+{
+  "success": false,
+  "data": null,
+  "message": "오류 메시지"
+}
+----
+
+=== 오류 유형
+
+|===
+| HTTP 상태 | 오류 메시지 | 설명
+
+| `400 Bad Request`
+| "No files provided"
+| 업로드할 파일이 제공되지 않음
+
+| `400 Bad Request`
+| "No valid files provided"
+| 유효하지 않은 파일 (빈 파일 등)
+
+| `409 Conflict`
+| "Image with hash {hash} already exists"
+| 동일한 해시를 가진 이미지가 이미 존재
+
+| `500 Internal Server Error`
+| "Failed to generate thumbnail for {filename}"
+| 썸네일 생성 실패
+
+| `500 Internal Server Error`
+| "Failed to read uploaded files: {error}"
+| 파일 읽기 실패
+
+| `400 Bad Request`
+| "Image not found: {imageId}"
+| 존재하지 않는 이미지에 대한 썸네일 요청
+
+| `400 Bad Request`
+| "Cannot retry thumbnail generation"
+| 재시도 불가능한 상태의 썸네일 생성 요청
+
+| `400 Bad Request`
+| "Invalid cursor format"
+| 잘못된 커서 형식
+
+| `400 Bad Request`
+| "Invalid status: {status}"
+| 잘못된 이미지 상태 필터
+|===
+
+[[request-response-format]]
+== 요청/응답 형식
+
+=== Content-Type
+
+* 요청: `multipart/form-data`
+* 응답: `application/json`
+
+=== 파일 제한
+
+* 최대 파일 크기: 10MB
+* 최대 요청 크기: 10MB
+* 지원 이미지 형식: JPEG, PNG, GIF 등
+
+=== 응답 데이터 형식
+
+모든 API 응답은 다음과 같은 표준 형식을 따릅니다:
+
+[source,json]
+----
+{
+  "success": true,
+  "data": {
+    // 실제 데이터
+  },
+  "message": null // 성공 시 null, 실패 시 오류 메시지
+}
+----
