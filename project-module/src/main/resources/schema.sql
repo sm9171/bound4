@@ -70,8 +70,52 @@ CREATE TABLE IF NOT EXISTS role_policies (
     INDEX idx_role_policy_system (is_system_policy)
 );
 
+-- 감사 로그 테이블
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    action VARCHAR(50) NOT NULL CHECK (action IN ('USER_ROLE_UPDATED', 'ROLE_POLICY_UPDATED', 'ROLE_POLICY_CREATED', 'ROLE_POLICY_DELETED', 'POLICY_BACKUP_CREATED', 'POLICY_BACKUP_RESTORED', 'PERMISSION_GRANTED', 'PERMISSION_REVOKED', 'USER_CREATED', 'USER_DELETED', 'SYSTEM_SETTING_CHANGED')),
+    entity_type VARCHAR(100) NOT NULL,
+    entity_id BIGINT,
+    admin_user_id BIGINT NOT NULL,
+    admin_email VARCHAR(255) NOT NULL,
+    target_user_id BIGINT,
+    target_user_email VARCHAR(255),
+    old_value TEXT,
+    new_value TEXT,
+    reason VARCHAR(500),
+    client_ip VARCHAR(45),
+    user_agent VARCHAR(500),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_audit_admin_user_id (admin_user_id),
+    INDEX idx_audit_target_user_id (target_user_id),
+    INDEX idx_audit_action (action),
+    INDEX idx_audit_created_at (created_at),
+    INDEX idx_audit_entity (entity_type, entity_id)
+);
+
+-- 사용자 알림 테이블
+CREATE TABLE IF NOT EXISTS user_notifications (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    type VARCHAR(50) NOT NULL CHECK (type IN ('ROLE_CHANGED', 'PERMISSION_CHANGED', 'SYSTEM_NOTICE', 'POLICY_UPDATED', 'ACCOUNT_SUSPENDED', 'ACCOUNT_REACTIVATED', 'SUBSCRIPTION_CHANGED', 'SECURITY_ALERT')),
+    title VARCHAR(200) NOT NULL,
+    message VARCHAR(1000) NOT NULL,
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    admin_user_id BIGINT,
+    reference_id VARCHAR(100),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    read_at TIMESTAMP,
+    INDEX idx_notification_user_id (user_id),
+    INDEX idx_notification_user_id_read (user_id, is_read),
+    INDEX idx_notification_type (type),
+    INDEX idx_notification_created_at (created_at),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- 인덱스 추가 설명
 -- 1. users 테이블: 이메일 기반 로그인, 역할별 검색, 구독 플랜별 검색을 위한 인덱스
 -- 2. projects 테이블: 사용자별 프로젝트 조회, 상태별 필터링, 이름 검색, 생성일 정렬을 위한 인덱스  
 -- 3. permissions 테이블: 역할별 권한 조회, 구독 플랜별 권한 조회, 리소스별 권한 조회를 위한 인덱스
 -- 4. role_policies 테이블: 역할별 정책 조회, 구독 플랜별 정책 조회, 시스템 정책 구분을 위한 인덱스
+-- 5. audit_logs 테이블: 관리자별 로그 조회, 대상 사용자별 로그 조회, 액션별 로그 조회를 위한 인덱스
+-- 6. user_notifications 테이블: 사용자별 알림 조회, 읽지 않은 알림 조회, 타입별 알림 조회를 위한 인덱스
