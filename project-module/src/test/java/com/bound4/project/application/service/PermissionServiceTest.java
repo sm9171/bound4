@@ -62,6 +62,33 @@ class PermissionServiceTest {
         standardUser = userFactory.createStandardUser();
         basicUser = userFactory.createBasicUser();
         testProject = projectFactory.createTestProject(standardUser);
+        
+        // Mock 테스트를 위한 ID 설정
+        setUserId(adminUser, 1L);
+        setUserId(premiumUser, 2L);
+        setUserId(standardUser, 3L);
+        setUserId(basicUser, 4L);
+        setProjectId(testProject, 1L);
+    }
+    
+    private void setUserId(User user, Long id) {
+        try {
+            java.lang.reflect.Field idField = User.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(user, id);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set user ID", e);
+        }
+    }
+    
+    private void setProjectId(Project project, Long id) {
+        try {
+            java.lang.reflect.Field idField = Project.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(project, id);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set project ID", e);
+        }
     }
 
     @ParameterizedTest
@@ -180,14 +207,14 @@ class PermissionServiceTest {
     @DisplayName("구독 플랜이 요구사항에 미치지 못하면 예외가 발생한다")
     void validateSubscriptionLimit_WithInsufficientPlan_ShouldThrowException() {
         // given
-        Long userId = 1L;
+        Long userId = 3L; // standardUser의 ID
         
         given(userRepository.findById(userId)).willReturn(Optional.of(standardUser)); // BASIC 플랜
 
         // when & then
         assertThatThrownBy(() -> permissionService.validateSubscriptionLimit(userId, SubscriptionPlan.PRO))
                 .isInstanceOf(AccessDeniedException.class)
-                .hasMessageContaining("PRO 플랜 이상이 필요합니다");
+                .hasMessageContaining("프로 플랜 플랜 이상이 필요합니다");
     }
 
     @Test
@@ -296,6 +323,13 @@ class PermissionServiceTest {
         RolePolicy existingPolicy = policyFactory.createAllowedPolicy(Role.C, Resource.PROJECT, Action.CREATE, SubscriptionPlan.BASIC);
 
         given(userRepository.findById(adminId)).willReturn(Optional.of(adminUser));
+        
+        // 관리자 권한 확인을 위한 stub
+        given(rolePolicyRepository.findByRoleAndResourceAndActionAndSubscriptionPlan(
+                Role.A, Resource.ROLE_POLICY, Action.MANAGE, SubscriptionPlan.PRO))
+                .willReturn(Optional.of(policyFactory.createAllowedPolicy(Role.A, Resource.ROLE_POLICY, Action.MANAGE, SubscriptionPlan.PRO)));
+        
+        // 실제 정책 조회를 위한 stub
         given(rolePolicyRepository.findByRoleAndResourceAndActionAndSubscriptionPlan(
                 Role.C, Resource.PROJECT, Action.CREATE, SubscriptionPlan.BASIC))
                 .willReturn(Optional.of(existingPolicy));
@@ -313,7 +347,7 @@ class PermissionServiceTest {
     @DisplayName("관리자가 아닌 사용자가 역할 정책을 업데이트하려고 하면 예외가 발생한다")
     void updateRolePolicy_WithNonAdmin_ShouldThrowException() {
         // given
-        Long userId = 1L;
+        Long userId = 3L; // standardUser의 ID
 
         given(userRepository.findById(userId)).willReturn(Optional.of(standardUser));
 
@@ -321,7 +355,7 @@ class PermissionServiceTest {
         assertThatThrownBy(() -> permissionService.updateRolePolicy(userId, Role.C, "PROJECT", "CREATE", 
                 false, "테스트 이유", SubscriptionPlan.BASIC))
                 .isInstanceOf(AccessDeniedException.class)
-                .hasMessageContaining("ROLE_POLICY MANAGE 권한이 없습니다");
+                .hasMessageContaining("ROLE_POLICY 리소스에 대한 MANAGE 권한이 없습니다");
     }
 
     @Test

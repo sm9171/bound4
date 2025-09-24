@@ -4,6 +4,7 @@ import com.bound4.project.adapter.in.web.dto.admin.*;
 import com.bound4.project.adapter.out.persistence.*;
 import com.bound4.project.config.TestDataConfig;
 import com.bound4.project.domain.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,6 +62,20 @@ class AdminServiceTest {
         adminUser = userFactory.createAdminUser();
         standardUser = userFactory.createStandardUser();
         testPolicy = policyFactory.createAllowedPolicy(Role.C, Resource.PROJECT, Action.CREATE, SubscriptionPlan.BASIC);
+        
+        // Mock 테스트를 위한 ID 설정
+        setUserId(adminUser, 1L);
+        setUserId(standardUser, 2L);
+    }
+    
+    private void setUserId(User user, Long id) {
+        try {
+            java.lang.reflect.Field idField = User.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.set(user, id);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set user ID", e);
+        }
     }
 
     @Test
@@ -111,7 +126,11 @@ class AdminServiceTest {
                 Role.C, Resource.PROJECT, Action.CREATE, SubscriptionPlan.BASIC))
                 .willReturn(Optional.of(testPolicy));
         given(rolePolicyRepository.save(testPolicy)).willReturn(testPolicy);
-        given(objectMapper.writeValueAsString(any())).willReturn("test_json");
+        try {
+            given(objectMapper.writeValueAsString(any())).willReturn("test_json");
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         given(userRepository.findByRoleAndSubscriptionPlan(Role.C, SubscriptionPlan.BASIC))
                 .willReturn(Arrays.asList(standardUser));
 
@@ -123,7 +142,7 @@ class AdminServiceTest {
         assertThat(response.reason()).isEqualTo("테스트 수정");
 
         verify(auditLogRepository).save(any(AuditLog.class));
-        verify(notificationService).notifyPermissionChanged(eq(standardUser.getId()), eq(adminId), anyString(), anyString(), eq(false));
+        verify(notificationService).notifyPermissionChanged(eq(2L), eq(adminId), anyString(), anyString(), eq(false));
     }
 
     @Test
