@@ -28,6 +28,9 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     List<Project> findByStatus(ProjectStatus status);
 
+    @Query("SELECT p FROM Project p WHERE p.status = :status")
+    Page<Project> findByStatus(@Param("status") ProjectStatus status, Pageable pageable);
+
     @Query("SELECT p FROM Project p WHERE p.name LIKE %:namePattern%")
     List<Project> findByNameContaining(@Param("namePattern") String namePattern);
 
@@ -53,4 +56,13 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     List<Project> findByUserIdAndStatus(@Param("userId") Long userId, @Param("status") ProjectStatus status);
 
     boolean existsByUserAndName(User user, String name);
+
+    @Query("SELECT p FROM Project p JOIN FETCH p.user WHERE p.id = :id")
+    Optional<Project> findByIdWithUser(@Param("id") Long id);
+
+    @Query("SELECT p FROM Project p JOIN FETCH p.user WHERE p.status = :status")
+    List<Project> findByStatusWithUser(@Param("status") ProjectStatus status);
+
+    @Query("SELECT p FROM Project p JOIN FETCH p.user WHERE p.user = :user AND p.status = :status")
+    List<Project> findByUserAndStatusWithUser(@Param("user") User user, @Param("status") ProjectStatus status);
 }
