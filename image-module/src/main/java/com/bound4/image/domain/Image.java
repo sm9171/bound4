@@ -13,6 +13,7 @@ public class Image {
     private String originalImageKey;
     private String thumbnailKey;
     private ImageStatus status;
+    private ThumbnailProcessingStatus thumbnailProcessingStatus;
     private Map<String, Object> tags;
     private String memo;
     private final LocalDateTime createdAt;
@@ -29,12 +30,19 @@ public class Image {
         this.mimeType = mimeType;
         this.originalImageKey = originalImageKey;
         this.status = ImageStatus.READY;
+        this.thumbnailProcessingStatus = ThumbnailProcessingStatus.PENDING;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
     public void setThumbnailKey(String thumbnailKey) {
         this.thumbnailKey = thumbnailKey;
+        this.thumbnailProcessingStatus = ThumbnailProcessingStatus.COMPLETED;
+        this.updatedAt = LocalDateTime.now();
+    }
+    
+    public void updateThumbnailProcessingStatus(ThumbnailProcessingStatus status) {
+        this.thumbnailProcessingStatus = status;
         this.updatedAt = LocalDateTime.now();
     }
 
@@ -98,6 +106,10 @@ public class Image {
     
     public ImageStatus getStatus() {
         return status;
+    }
+    
+    public ThumbnailProcessingStatus getThumbnailProcessingStatus() {
+        return thumbnailProcessingStatus;
     }
     
     public Map<String, Object> getTags() {
