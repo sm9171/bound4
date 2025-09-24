@@ -1,7 +1,6 @@
 package com.bound4.project.domain;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -23,12 +22,12 @@ public class Permission {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "리소스는 필수입니다")
+    @NotNull(message = "리소스는 필수입니다")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Resource resource;
 
-    @NotBlank(message = "액션은 필수입니다")
+    @NotNull(message = "액션은 필수입니다")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Action action;
