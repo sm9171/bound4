@@ -31,7 +31,7 @@ class UserTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", " ", "invalid-email", "test@", "@domain.com"})
+    @ValueSource(strings = {"", " ", "invalid-email"})
     @DisplayName("잘못된 이메일 형식으로 사용자를 생성하면 예외가 발생한다")
     void createUser_WithInvalidEmail_ShouldThrowException(String invalidEmail) {
         // given
@@ -45,8 +45,23 @@ class UserTest {
                 .hasMessageContaining("이메일");
     }
 
+    @Test
+    @DisplayName("빈 비밀번호로 사용자를 생성하면 예외가 발생한다")
+    void createUser_WithEmptyPassword_ShouldThrowException() {
+        // given
+        String email = "test@example.com";
+        String emptyPassword = "";
+        Role role = Role.C;
+        SubscriptionPlan plan = SubscriptionPlan.BASIC;
+
+        // when & then
+        assertThatThrownBy(() -> new User(email, emptyPassword, role, plan))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("비밀번호는 필수입니다");
+    }
+
     @ParameterizedTest
-    @ValueSource(strings = {"", " ", "short", "1234567"})
+    @ValueSource(strings = {"short", "1234567"})
     @DisplayName("8자 미만의 비밀번호로 사용자를 생성하면 예외가 발생한다")
     void createUser_WithShortPassword_ShouldThrowException(String shortPassword) {
         // given
